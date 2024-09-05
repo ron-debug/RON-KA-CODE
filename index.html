@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Distance Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label, select, button {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #map {
+            height: 500px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        #routeResult {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fantasy Distance Finder</h1>
+    
+    <form id="routeForm">
+        <label for="start">Start Location:</label>
+        <select name="start" id="start" required>
+            {% for location in locations %}
+            <option value="{{ location }}">{{ location }}</option>
+            {% endfor %}
+        </select>
+        
+        <label for="goal">Goal Location:</label>
+        <select name="goal" id="goal" required>
+            {% for location in locations %}
+            <option value="{{ location }}">{{ location }}</option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit">Find Shortest Route</button>
+    </form>
+
+    <div id="routeResult"></div>
+
+    <div id="map"></div>
+
+    <script>
+        document.getElementById('routeForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            
+            let start = document.getElementById('start').value;
+            let goal = document.getElementById('goal').value;
+
+            fetch('/find_route', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `start=${encodeURIComponent(start)}&goal=${encodeURIComponent(goal)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('routeResult').textContent = data.route || 'No route found.';
+
+                if (data.map_html) {
+                    document.getElementById('map').innerHTML = data.map_html;
+                } else {
+                    document.getElementById('map').innerHTML = '<p>Map not available.</p>';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
